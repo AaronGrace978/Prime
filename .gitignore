@@ -1,0 +1,7 @@
+build*/
+out/
+*.wav
+*.tga
+!assets/**
+.cache/
+compile_commands.json
