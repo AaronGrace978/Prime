@@ -9,9 +9,11 @@ the real OpenKTG operator chain and returns a texture.
 "molten lava with glowing cracks"
         │
         ▼
-   ┌─────────┐     OPENAI_API_KEY set?
-   │ AI layer │ ──► GPT-4o-mini → JSON recipe
-   └─────────┘     else → rules engine (keyword parser)
+   ┌─────────┐     GROQ_API_KEY / OPENAI_API_KEY / LLM_API_KEY?
+   │ AI layer │ ──► Groq Llama (free) → JSON recipe
+   └─────────┘     else OpenAI GPT → JSON recipe
+                   else custom OpenAI-compatible LLM
+                   else → rules engine (keyword parser)
         │
         ▼
    recipe.txt  (size, style, colors, voronoi params, lighting…)
@@ -36,12 +38,25 @@ the real OpenKTG operator chain and returns a texture.
 
 | Mode | When | What it does |
 |------|------|--------------|
-| **GPT** | `OPENAI_API_KEY` is set | Sends your prompt to OpenAI; model returns a JSON recipe tuned to your description |
-| **Rules** | always available as fallback | Keyword parser maps material words → style presets (lava, ice, rust, panel, …) |
+| **Groq Llama** | `GROQ_API_KEY` is set (free, no card) | Llama 3.3 70B via Groq cloud → JSON recipe |
+| **GPT** | `OPENAI_API_KEY` is set | OpenAI model → JSON recipe |
+| **Custom LLM** | `LLM_API_KEY` + optional `LLM_BASE_URL` | Any OpenAI-compatible API (Together, OpenRouter, Ollama…) |
+| **Rules** | always available as fallback | Keyword parser maps material words → style presets |
 
 ```bash
+# Free Llama cloud (recommended)
+export GROQ_API_KEY=gsk_...          # console.groq.com
+export GROQ_MODEL=llama-3.3-70b-versatile   # optional
+
+# Or OpenAI
 export OPENAI_API_KEY=sk-...
-export OPENAI_MODEL=gpt-4o-mini   # optional, this is the default
+export OPENAI_MODEL=gpt-4o-mini      # optional
+
+# Or any OpenAI-compatible endpoint (e.g. local Ollama)
+export LLM_API_KEY=ollama
+export LLM_BASE_URL=http://127.0.0.1:11434/v1
+export LLM_MODEL=llama3.2
+
 ./studio/launch.sh
 ```
 

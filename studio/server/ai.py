@@ -1,7 +1,11 @@
 """AI prompt → Prime texture recipe.
 
-Uses OpenAI when OPENAI_API_KEY is set; otherwise a deterministic
-keyword/rule parser that still produces valid Werkkzeug-style recipes.
+Provider priority (first key wins):
+  1. GROQ_API_KEY      — free Llama cloud (console.groq.com, no credit card)
+  2. OPENAI_API_KEY    — OpenAI GPT
+  3. LLM_API_KEY       — any OpenAI-compatible endpoint (Together, OpenRouter, Ollama…)
+
+Falls back to the deterministic rules engine when no provider is configured.
 """
 
 from __future__ import annotations
@@ -10,11 +14,10 @@ import hashlib
 import json
 import os
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import Any
 
 import httpx
-
 
 STYLES = ("noise", "voronoi", "metal", "panel", "organic", "ice", "lava", "rust")
 
@@ -55,13 +58,83 @@ PRESETS: dict[str, str] = {
     "static noise field": "pure procedural grayscale noise texture with cool blue tint",
 }
 
+# OpenAI-compatible LLM backends. Groq first — free Llama cloud tier.
+LLM_BACKENDS: tuple[dict[str, str], ...] = (
+    {
+        "mode": "groq",
+        "label": "Groq Llama",
+        "api_key_env": "GROQ_API_KEY",
+        "base_url": "https://api.groq.com/openai/v1/chat/completions",
+        "model_env": "GROQ_MODEL",
+        "default_model": "llama-3.3-70b-versatile",
+    },
+    {
+        "mode": "openai",
+        "label": "OpenAI",
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url": "https://api.openai.com/v1/chat/completions",
+        "model_env": "OPENAI_MODEL",
+        "default_model": "gpt-4o-mini",
+    },
+    {
+        "mode": "llm",
+        "label": "Custom LLM",
+        "api_key_env": "LLM_API_KEY",
+        "base_url_env": "LLM_BASE_URL",
+        "default_base_url": "http://127.0.0.1:11434/v1/chat/completions",
+        "model_env": "LLM_MODEL",
+        "default_model": "llama3.2",
+        "requires_base_url": "1",
+    },
+)
+
+SYSTEM_PROMPT = (
+    "You are the AI layer of Prime, a procedural texture engine descended from "
+    "Farbrausch Werkkzeug3 / OpenKTG. Given a natural-language material description, "
+    "output ONLY valid JSON with these keys: style (one of "
+    + ", ".join(STYLES)
+    + "), color_start and color_end as 0xaarrggbb hex strings, "
+    "optional size (256/512/1024), blur (0.002-0.02), grid_rotation (0-0.5), "
+    "bump_strength (1-4), light_x/y/z floats, and explanation (one sentence). "
+    "Pick style and colors that match the prompt. No markdown."
+)
+
 
 @dataclass
 class AIResult:
     recipe: dict[str, Any]
     explanation: str
-    mode: str  # "openai" | "rules"
+    mode: str  # "groq" | "openai" | "llm" | "rules" | "mutation"
     operators: list[dict[str, str]]
+
+
+def ai_status() -> dict[str, Any]:
+    """Report which AI providers are configured."""
+    active = active_llm_backend()
+    return {
+        "active": active["mode"] if active else None,
+        "active_label": active["label"] if active else None,
+        "groq": bool(os.environ.get("GROQ_API_KEY")),
+        "openai": bool(os.environ.get("OPENAI_API_KEY")),
+        "llm": bool(os.environ.get("LLM_API_KEY")),
+        "rules_fallback": True,
+        "free_tier_hint": "groq" if not active else None,
+    }
+
+
+def active_llm_backend() -> dict[str, str] | None:
+    for backend in LLM_BACKENDS:
+        if not os.environ.get(backend["api_key_env"]):
+            continue
+        if backend.get("requires_base_url"):
+            base = os.environ.get(
+                backend.get("base_url_env", ""),
+                backend.get("default_base_url", ""),
+            )
+            if not base:
+                continue
+        return backend
+    return None
 
 
 def _seed_from_prompt(prompt: str) -> int:
@@ -74,7 +147,6 @@ def _clamp_recipe(raw: dict[str, Any], prompt: str) -> dict[str, Any]:
     r.update({k: v for k, v in raw.items() if k in DEFAULT_RECIPE or k.startswith("voro_")})
     r["seed"] = int(raw.get("seed", _seed_from_prompt(prompt)))
     size = int(raw.get("size", r["size"]))
-    # snap to power of two
     valid = [16, 32, 64, 128, 256, 512, 1024, 2048]
     r["size"] = min(valid, key=lambda x: abs(x - size))
     style = str(raw.get("style", r["style"])).lower()
@@ -102,6 +174,73 @@ def _operators_for(style: str) -> list[dict[str, str]]:
             {"id": "paste", "label": "Paste Multiply", "desc": "Overlay grid detail"},
         ]
     return ops
+
+
+def _parse_json_response(content: str) -> dict[str, Any]:
+    text = content.strip()
+    if text.startswith("```"):
+        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+    return json.loads(text)
+
+
+def _backend_url(backend: dict[str, str]) -> str:
+    if "base_url_env" in backend:
+        return os.environ.get(
+            backend["base_url_env"], backend.get("default_base_url", "")
+        ).rstrip("/")
+    url = backend["base_url"]
+    if not url.endswith("/chat/completions"):
+        if url.endswith("/v1"):
+            return f"{url}/chat/completions"
+    return url
+
+
+def _backend_model(backend: dict[str, str]) -> str:
+    return os.environ.get(backend["model_env"], backend["default_model"])
+
+
+async def prompt_to_recipe_llm(prompt: str, backend: dict[str, str]) -> AIResult | None:
+    api_key = os.environ.get(backend["api_key_env"], "")
+    if not api_key:
+        return None
+
+    url = _backend_url(backend)
+    model = _backend_model(backend)
+    if not url:
+        return None
+
+    payload: dict[str, Any] = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.7,
+        "response_format": {"type": "json_object"},
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            resp = await client.post(
+                url,
+                headers={"Authorization": f"Bearer {api_key}"},
+                json=payload,
+            )
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"]
+            data = _parse_json_response(content)
+    except Exception:
+        return None
+
+    explanation = str(data.pop("explanation", f"Generated by {backend['label']}"))
+    recipe = _clamp_recipe(data, prompt)
+    return AIResult(
+        recipe=recipe,
+        explanation=explanation,
+        mode=backend["mode"],
+        operators=_operators_for(recipe["style"]),
+    )
 
 
 def prompt_to_recipe_rules(prompt: str) -> AIResult:
@@ -153,8 +292,6 @@ def prompt_to_recipe_rules(prompt: str) -> AIResult:
 
     if "dark" in p:
         notes.append("Darkened palette")
-        cs = raw.get("color_start", DEFAULT_RECIPE["color_start"])
-        raw["color_start"] = cs  # keep style-specific unless generic
 
     if any(w in p for w in ("bright", "glow", "emissive")):
         raw["light_z"] = -2.0
@@ -174,64 +311,20 @@ def prompt_to_recipe_rules(prompt: str) -> AIResult:
     )
 
 
-async def prompt_to_recipe_openai(prompt: str) -> AIResult | None:
-    api_key = os.environ.get("OPENAI_API_KEY")
-    if not api_key:
-        return None
-
-    system = (
-        "You are the AI layer of Prime, a procedural texture engine descended from "
-        "Farbrausch Werkkzeug3 / OpenKTG. Given a natural-language material description, "
-        "output ONLY valid JSON with these keys: style (one of "
-        + ", ".join(STYLES)
-        + "), color_start and color_end as 0xaarrggbb hex strings, "
-        "optional size (256/512/1024), blur (0.002-0.02), grid_rotation (0-0.5), "
-        "bump_strength (1-4), light_x/y/z floats, and explanation (one sentence). "
-        "Pick style and colors that match the prompt. No markdown."
-    )
-
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}"},
-                json={
-                    "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": 0.7,
-                    "response_format": {"type": "json_object"},
-                },
-            )
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"]
-            data = json.loads(content)
-    except Exception:
-        return None
-
-    explanation = str(data.pop("explanation", "Generated by OpenAI"))
-    recipe = _clamp_recipe(data, prompt)
-    return AIResult(
-        recipe=recipe,
-        explanation=explanation,
-        mode="openai",
-        operators=_operators_for(recipe["style"]),
-    )
-
-
 async def prompt_to_recipe(prompt: str) -> AIResult:
     prompt = prompt.strip()
     if not prompt:
         prompt = "kkrieger sci-fi metal panel"
 
-    ai = await prompt_to_recipe_openai(prompt)
-    if ai:
-        return ai
+    backend = active_llm_backend()
+    if backend:
+        ai = await prompt_to_recipe_llm(prompt, backend)
+        if ai:
+            return ai
+
     return prompt_to_recipe_rules(prompt)
 
 
 def recipe_to_file_lines(recipe: dict[str, Any]) -> str:
-  lines = [f"{k}={v}" for k, v in recipe.items()]
-  return "\n".join(lines) + "\n"
+    lines = [f"{k}={v}" for k, v in recipe.items()]
+    return "\n".join(lines) + "\n"

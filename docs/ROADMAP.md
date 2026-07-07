@@ -16,7 +16,7 @@ is tested — no big-bang rewrites.
 - [x] `primeforge` — recipe-driven single-texture generator
 - [x] **Prime Studio** — web UI + FastAPI
   - Natural language → operator recipe → C++ engine → live preview
-  - GPT when `OPENAI_API_KEY` is set; rules engine fallback always available
+  - Groq Llama when `GROQ_API_KEY` is set (free tier); OpenAI or custom LLM optional
   - Operator graph visualization + machine-readable recipe export
 
 ## Phase 2 — The Werkkzeug3 texture pipeline

@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from .ai import PRESETS, prompt_to_recipe
+from .ai import PRESETS, ai_status, prompt_to_recipe
 from .engine import FORGE_BIN, GRAPH_BIN, forge_available, graph_available, render_texture
 from .graph import graph_for_display, recipe_to_graph
 from .mutate import mutate_recipe, suggest_mutations
@@ -23,7 +23,7 @@ WEB = Path(__file__).resolve().parents[1] / "web"
 OUTPUT = Path(os.environ.get("PRIME_STUDIO_OUTPUT", "/tmp/prime-studio"))
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
-app = FastAPI(title="Prime Studio", version="0.3.0")
+app = FastAPI(title="Prime Studio", version="0.3.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -60,16 +60,22 @@ class GenerateResponse(BaseModel):
 
 @app.get("/api/status")
 def status():
+    ai = ai_status()
     return {
         "engine": "Prime / Werkkzeug resurrection",
         "forge": forge_available(),
         "graph": graph_available(),
         "forge_bin": FORGE_BIN,
         "graph_bin": GRAPH_BIN,
-        "ai_openai": bool(os.environ.get("OPENAI_API_KEY")),
+        "ai": ai,
+        # legacy keys for older UI builds
+        "ai_openai": ai["openai"] or ai["active"] == "openai",
+        "ai_groq": ai["groq"],
+        "ai_active": ai["active"],
+        "ai_active_label": ai["active_label"],
         "ai_fallback": "rules",
         "presets": list(PRESETS.keys()),
-        "version": "0.3.0",
+        "version": "0.3.1",
     }
 
 

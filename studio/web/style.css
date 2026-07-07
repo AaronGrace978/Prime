@@ -184,6 +184,7 @@ body {
   border: 1px solid rgba(168, 85, 247, 0.4);
 }
 .badge--openai { background: rgba(0, 229, 255, 0.15); color: var(--cyan); border-color: rgba(0, 229, 255, 0.4); }
+.badge--groq { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.4); }
 .badge--mutate { background: rgba(244, 114, 182, 0.15); color: var(--pink); border-color: rgba(244, 114, 182, 0.4); }
 #aiExplanation { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; font-family: var(--mono); line-height: 1.5; }
 

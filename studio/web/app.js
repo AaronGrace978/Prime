@@ -26,9 +26,14 @@ async function loadStatus() {
     const s = await r.json();
     statusDot.className = "status__dot status__dot--ok";
     const graph = s.graph ? "primegraph" : "primeforge";
-    const ai = s.ai_openai ? "OpenAI + rules" : "rules engine";
+    const ai = s.ai || {};
+    const aiLabel = ai.active_label
+      ? `${ai.active_label} + rules`
+      : ai.free_tier_hint === "groq"
+        ? "rules (set GROQ_API_KEY for free Llama)"
+        : "rules engine";
     statusText.textContent = s.forge
-      ? `v${s.version || "0.3"} · ${graph} · ${ai}`
+      ? `v${s.version || "0.3"} · ${graph} · ${aiLabel}`
       : "engine offline — build primegraph";
     if (!s.forge) statusDot.className = "status__dot";
 
@@ -113,9 +118,23 @@ function applyResponse(data) {
   renderMutations(data.mutations);
 
   aiMetaEl.hidden = false;
-  const modeLabels = { openai: "GPT", rules: "rules AI", mutation: "mutation" };
+  const modeLabels = {
+    groq: "Llama",
+    openai: "GPT",
+    llm: "LLM",
+    rules: "rules AI",
+    mutation: "mutation",
+  };
   aiModeEl.textContent = modeLabels[data.mode] || data.mode;
-  aiModeEl.className = "badge" + (data.mode === "openai" ? " badge--openai" : data.mode === "mutation" ? " badge--mutate" : "");
+  aiModeEl.className =
+    "badge" +
+    (data.mode === "groq"
+      ? " badge--groq"
+      : data.mode === "openai"
+        ? " badge--openai"
+        : data.mode === "mutation"
+          ? " badge--mutate"
+          : "");
   aiExplanationEl.textContent = data.explanation;
 
   timingEl.textContent = `rendered in ${data.ms}ms via ${data.renderer}`;
