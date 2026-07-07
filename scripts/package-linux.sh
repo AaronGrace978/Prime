@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VERSION="${PRIME_VERSION:-$(git -C "$ROOT" describe --tags --always 2>/dev/null | sed 's/^v//')}"
-VERSION="${VERSION:-0.2.0}"
+VERSION="${VERSION:-0.3.0}"
 ARCH="x86_64"
 STAGING="$ROOT/dist/Prime-${VERSION}-linux-${ARCH}"
 TARBALL="$ROOT/dist/Prime-${VERSION}-linux-${ARCH}.tar.gz"
@@ -14,6 +14,9 @@ echo ""
 
 # --- compile ---------------------------------------------------------------
 BUILD="$ROOT/build-release"
+# Prefer g++ for portable linux tarballs (static libstdc++ linking)
+export CC="${CC:-gcc}"
+export CXX="${CXX:-g++}"
 cmake -S "$ROOT" -B "$BUILD" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_CXX_FLAGS="-O3 -march=x86-64" \
@@ -28,6 +31,7 @@ ctest --test-dir "$BUILD" --output-on-failure
 rm -rf "$STAGING"
 mkdir -p "$STAGING"/{bin,share/prime,share/applications,share/icons/hicolor/256x256/apps}
 
+cp "$BUILD/tools/primegraph/primegraph" "$STAGING/bin/"
 cp "$BUILD/tools/primeforge/primeforge" "$STAGING/bin/"
 cp "$BUILD/tools/primetex/primetex"     "$STAGING/bin/"
 cp "$BUILD/tools/primeplay/primeplay"   "$STAGING/bin/"

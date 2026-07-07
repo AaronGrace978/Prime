@@ -85,6 +85,9 @@ cd Prime-*-linux-x86_64
 prime-studio          # opens AI workbench in your browser
 ```
 
+Studio includes **operator graphs** and **live mutation buttons** (Darker, Menacing, Chaos Seed, …).
+CLI tools: `primegraph`, `primeforge`, `primetex`, `primeplay`.
+
 Add `~/.local/share/Prime/bin/prime-deck` as a **Non-Steam game** for one-click
 access from Desktop Mode. Full guide: [release/README-STEAMDECK.md](release/README-STEAMDECK.md).
 

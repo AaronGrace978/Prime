@@ -42,7 +42,7 @@ chmod +x "$DESKTOP_DIR/Prime.desktop"
 # CLI symlinks
 BIN_DIR="${HOME}/.local/bin"
 mkdir -p "$BIN_DIR"
-for tool in prime-studio prime-deck primeforge primetex primeplay; do
+for tool in prime-studio prime-deck primegraph primeforge primetex primeplay; do
   ln -sf "$INSTALL_DIR/bin/$tool" "$BIN_DIR/$tool"
 done
 
@@ -50,6 +50,7 @@ echo ""
 echo "✓ Prime installed!"
 echo ""
 echo "  Launch Studio:  prime-studio"
+echo "  CLI tools:      primegraph, primeforge, primetex, primeplay"
 echo "  Or find 'Prime Studio' in your app menu (Desktop Mode)"
 echo ""
 echo "  Steam Deck tip: add $INSTALL_DIR/bin/prime-deck as a Non-Steam game"
