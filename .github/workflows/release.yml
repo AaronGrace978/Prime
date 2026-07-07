@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  linux-x86_64:
+    name: linux x86_64 (Steam Deck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential cmake libstdc++-14-dev python3 python3-venv python3-pip
+
+      - name: Build release package
+        run: |
+          chmod +x scripts/package-linux.sh release/install.sh release/bin/*
+          PRIME_VERSION="${GITHUB_REF_NAME#v}" ./scripts/package-linux.sh
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Prime-*-linux-x86_64.tar.gz
+          generate_release_notes: true
+          body: |
+            ## Prime ${{ github.ref_name }} — Linux x86_64
+
+            Universal build for **Steam Deck** (Desktop Mode) and any Linux amd64 desktop.
+
+            ### Install
+            ```bash
+            tar -xzf Prime-*-linux-x86_64.tar.gz
+            cd Prime-*-linux-x86_64
+            ./install.sh
+            prime-studio
+            ```
+
+            See `README-STEAMDECK.md` inside the archive for Steam library integration.
+
+            **Optional:** set `OPENAI_API_KEY` before launch for GPT-powered material design.

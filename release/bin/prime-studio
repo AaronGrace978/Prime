@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Prime Studio — AI procedural texture workbench
+set -euo pipefail
+
+# Resolve install root (bin/ is one level below root)
+BIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT="$(cd "$BIN_DIR/.." && pwd)"
+STUDIO="$ROOT/share/prime/studio"
+VENV="$ROOT/.venv"
+PORT="${PRIME_STUDIO_PORT:-8787}"
+
+export PRIME_FORGE_BIN="$ROOT/bin/primeforge"
+export PRIME_STUDIO_OUTPUT="${XDG_CACHE_HOME:-$HOME/.cache}/prime-studio"
+export PYTHONPATH="$STUDIO"
+mkdir -p "$PRIME_STUDIO_OUTPUT"
+
+# Python venv (created by install.sh; bootstrap if missing)
+if [[ ! -f "$VENV/bin/activate" ]]; then
+  echo "Prime: first-run setup — creating Python environment…"
+  python3 -m venv "$VENV"
+  "$VENV/bin/pip" install -q --upgrade pip
+  "$VENV/bin/pip" install -q -r "$STUDIO/requirements.txt"
+fi
+# shellcheck disable=SC1091
+source "$VENV/bin/activate"
+
+# Pick a free port if default is taken
+while ss -tln 2>/dev/null | grep -q ":${PORT} "; do
+  PORT=$((PORT + 1))
+done
+
+URL="http://127.0.0.1:${PORT}"
+echo ""
+echo "  ◈ Prime Studio"
+echo "  → $URL"
+echo "  Ctrl+C to stop"
+echo ""
+
+# Open browser on desktop (Steam Deck desktop mode, etc.)
+if command -v xdg-open >/dev/null 2>&1; then
+  (sleep 1 && xdg-open "$URL") >/dev/null 2>&1 &
+elif command -v steamos-readonly >/dev/null 2>&1; then
+  (sleep 1 && steamos-readonly disable 2>/dev/null; xdg-open "$URL") >/dev/null 2>&1 &
+fi
+
+cd "$STUDIO"
+exec python3 -m uvicorn server.main:app --host 127.0.0.1 --port "$PORT" --app-dir "$STUDIO"

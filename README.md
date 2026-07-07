@@ -73,6 +73,23 @@ fallback without any API key. See [docs/AI.md](docs/AI.md).
 
 ![Prime Studio](docs/images/prime-studio.png)
 
+## Steam Deck / Linux install
+
+Download the latest **`Prime-*-linux-x86_64.tar.gz`** from
+[Releases](https://github.com/AaronGrace978/Prime/releases) — native amd64, no Proton.
+
+```bash
+tar -xzf Prime-*-linux-x86_64.tar.gz
+cd Prime-*-linux-x86_64
+./install.sh
+prime-studio          # opens AI workbench in your browser
+```
+
+Add `~/.local/share/Prime/bin/prime-deck` as a **Non-Steam game** for one-click
+access from Desktop Mode. Full guide: [release/README-STEAMDECK.md](release/README-STEAMDECK.md).
+
+Build your own package: `./scripts/package-linux.sh`
+
 ## Repository layout
 
 ```

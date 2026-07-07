@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Prime Studio
+Comment=AI-powered procedural textures — Werkkzeug resurrection
+Exec=@INSTALL_DIR@/bin/prime-studio
+Icon=@INSTALL_DIR@/share/icons/hicolor/256x256/apps/prime.png
+Terminal=true
+Categories=Graphics;Development;
+Keywords=procedural;texture;demoscene;werkkzeug;ai;

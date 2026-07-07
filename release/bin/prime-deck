@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Steam Deck friendly launcher — starts Prime Studio and opens the UI.
+# Add this script as a Non-Steam game in Desktop Mode for quick access.
+exec "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/prime-studio" "$@"
