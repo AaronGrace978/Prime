@@ -27,8 +27,9 @@ echo "  ◈ Prime Studio"
 echo "  AI × Werkkzeug procedural engine"
 echo "  → http://127.0.0.1:${PORT}"
 echo ""
-echo "  Set OPENAI_API_KEY for GPT-powered material design."
-echo "  Without it, the rules engine still works."
+echo "  Free Llama cloud:  export GROQ_API_KEY=gsk_...  (console.groq.com — no card)"
+echo "  Or OpenAI:         export OPENAI_API_KEY=sk-..."
+echo "  Without a key, the rules engine still works."
 echo ""
 
 exec python3 -m uvicorn server.main:app --host 0.0.0.0 --port "$PORT" --app-dir studio

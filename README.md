@@ -68,8 +68,8 @@ C++ engine synthesizes the texture from math. No shipped pixels.
 # → http://127.0.0.1:8787
 ```
 
-Set `OPENAI_API_KEY` for GPT-powered material design; a rules engine runs as
-fallback without any API key. See [docs/AI.md](docs/AI.md).
+Set `GROQ_API_KEY` for **free Llama cloud** (Groq — no credit card), or
+`OPENAI_API_KEY` for GPT. A rules engine runs as fallback without any API key. See [docs/AI.md](docs/AI.md).
 
 ![Prime Studio](docs/images/prime-studio.png)
 

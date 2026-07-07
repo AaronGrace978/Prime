@@ -44,14 +44,30 @@ Launching from Steam starts the local server and opens the UI.
 - `python3` + `venv` (pre-installed on SteamOS 3.x)
 - A browser (Firefox in Desktop Mode)
 
-## GPT mode (optional)
+## GPT / Llama mode (optional)
+
+**Free Llama cloud (recommended)** — Groq, no credit card:
+
+```bash
+# Get a free key at https://console.groq.com
+export GROQ_API_KEY=gsk_your_key
+prime-studio
+```
+
+Optional model override (default: `llama-3.3-70b-versatile`):
+
+```bash
+export GROQ_MODEL=llama-3.1-8b-instant   # faster, more free requests/day
+```
+
+**OpenAI** (paid):
 
 ```bash
 export OPENAI_API_KEY=sk-your-key
 prime-studio
 ```
 
-Without a key, the built-in rules AI still generates textures.
+Without any API key, the built-in rules AI still generates textures.
 
 ## Headless CLI (optional)
 
