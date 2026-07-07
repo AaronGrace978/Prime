@@ -35,10 +35,13 @@ layer.
 The heart of the tool: documents are graphs of operators with parameters,
 evaluated lazily with caching. This is what turned artists loose on 96KB.
 
-- [ ] Operator/document model (`kdoc` reimagined, serialization included)
-- [ ] Texture operator set on top of `engine/texture`
-- [ ] Deterministic graph evaluator with memoization
-- [ ] Headless "build a texture pack from a graph file" tool
+- [x] Operator/document model (`graph.hpp` — `.pgraph` serialization)
+- [x] Texture operator set on top of `engine/texture` (13 op types)
+- [x] Deterministic graph evaluator with memoization
+- [x] `primegraph` — headless render from graph or recipe files
+- [x] Prime Studio: real evaluatable graphs + AI mutation buttons
+- [ ] Full `kdoc` editor UI with per-node parameter editing
+- [ ] Lazy graph evaluator with disk cache
 
 ## Phase 4 — Meshes and materials
 

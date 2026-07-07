@@ -21,6 +21,7 @@ add_subdirectory(engine/synth)
 if(PRIME_BUILD_TOOLS)
   add_subdirectory(tools/primetex)
   add_subdirectory(tools/primeforge)
+  add_subdirectory(tools/primegraph)
   add_subdirectory(tools/primeplay)
 endif()
 
