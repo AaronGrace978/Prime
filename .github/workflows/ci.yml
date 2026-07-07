@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.os }} / ${{ matrix.compiler }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: gcc
+            cc: gcc
+            cxx: g++
+          - os: ubuntu-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+          - os: macos-latest
+            compiler: clang
+            cc: clang
+            cxx: clang++
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        env:
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build -j 4
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Render artifacts
+        run: |
+          mkdir -p artifacts
+          ./build/tools/primetex/primetex -o artifacts -s 256
+          ./build/tools/primeplay/primeplay assets/v2m/v2_zeitmaschine_new.v2m -o artifacts/zeitmaschine.wav -t 30
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prime-output-${{ matrix.os }}-${{ matrix.compiler }}
+          path: artifacts/
