@@ -4,4 +4,6 @@ out/
 *.tga
 !assets/**
 .cache/
+__pycache__/
+*.pyc
 compile_commands.json
