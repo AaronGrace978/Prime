@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Prime Studio
-Comment=AI-powered procedural textures — Werkkzeug resurrection
+Comment=AI procedural textures — operator graphs & live mutations
 Exec=@INSTALL_DIR@/bin/prime-studio
 Icon=@INSTALL_DIR@/share/icons/hicolor/256x256/apps/prime.png
 Terminal=true

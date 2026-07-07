@@ -53,6 +53,7 @@
       <div class="ai-meta" id="aiMeta" hidden>
         <span class="badge" id="aiMode">rules</span>
         <p id="aiExplanation"></p>
+        <div class="mutations" id="mutations" hidden></div>
       </div>
     </section>
 
@@ -71,7 +72,7 @@
 
     <section class="panel panel--graph">
       <h2>Operator graph</h2>
-      <p class="hint">The generation history — not pixels — that defines your texture.</p>
+      <p class="hint">Real evaluatable graph — <span id="nodeCount">0</span> nodes, lazily executed by primegraph.</p>
       <div class="graph" id="graph">
         <div class="graph-empty">Generate to see the operator chain</div>
       </div>

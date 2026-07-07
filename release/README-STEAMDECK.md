@@ -17,7 +17,7 @@ This build runs natively on Steam Deck in **Desktop Mode**. No Proton needed.
    ```
    Or open **Prime Studio** from the application menu.
 
-Your browser opens to the AI workbench. Describe a material, hit Generate.
+Your browser opens to the AI workbench. Describe a material, hit Generate, then use the **mutation buttons** (Darker, Menacing, Chaos Seed, etc.) to evolve it live.
 
 ## Add to Steam (optional)
 
@@ -32,8 +32,9 @@ Launching from Steam starts the local server and opens the UI.
 
 | Binary | What it does |
 |--------|--------------|
-| `prime-studio` | AI workbench (web UI on port 8787) |
-| `primeforge` | Recipe → texture (C++ engine) |
+| `prime-studio` | AI workbench — operator graphs + live mutations (web UI on port 8787) |
+| `primegraph` | Operator graph → texture (C++ engine, preferred render path) |
+| `primeforge` | Recipe → texture (C++ engine, fallback) |
 | `primetex` | Showcase texture batch |
 | `primeplay` | Render .v2m tunes to WAV |
 
@@ -52,6 +53,15 @@ prime-studio
 
 Without a key, the built-in rules AI still generates textures.
 
+## Headless CLI (optional)
+
+From any terminal after install:
+
+```bash
+primegraph -r myrecipe.txt -o panel.tga --save-graph panel.pgraph
+primeplay assets/v2m/tune.v2m -o tune.wav -t 30
+```
+
 ## Troubleshooting
 
 **Port in use:** Prime auto-picks the next free port. Check the terminal output for the URL.
@@ -59,6 +69,11 @@ Without a key, the built-in rules AI still generates textures.
 **Python errors on first run:** Run `~/.local/share/Prime/install.sh` again, or:
 ```bash
 ~/.local/share/Prime/.venv/bin/pip install -r ~/.local/share/Prime/share/prime/studio/requirements.txt
+```
+
+**Engine offline in Studio:** Re-run `./install.sh` from the extracted folder, or rebuild from source:
+```bash
+cmake -S . -B build && cmake --build build
 ```
 
 **Read-only filesystem on Deck:** Install to `~/` (default). Don't install to system paths.

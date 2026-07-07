@@ -17,8 +17,9 @@ extern int g_failures;
     }                                                          \
   } while(0)
 
-// implemented in smoke_texture.cpp / smoke_synth.cpp
+// implemented in smoke_texture.cpp / smoke_graph.cpp / smoke_synth.cpp
 void TestTexture();
+void TestGraph();
 void TestSynth(const char *tunePath);
 
 #endif

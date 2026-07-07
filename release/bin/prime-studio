@@ -9,6 +9,7 @@ STUDIO="$ROOT/share/prime/studio"
 VENV="$ROOT/.venv"
 PORT="${PRIME_STUDIO_PORT:-8787}"
 
+export PRIME_GRAPH_BIN="$ROOT/bin/primegraph"
 export PRIME_FORGE_BIN="$ROOT/bin/primeforge"
 export PRIME_STUDIO_OUTPUT="${XDG_CACHE_HOME:-$HOME/.cache}/prime-studio"
 export PYTHONPATH="$STUDIO"

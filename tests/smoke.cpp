@@ -17,6 +17,7 @@ int main(int argc,char **argv)
   printf("=== Prime smoke test ===\n");
 
   TestTexture();
+  TestGraph();
 
   if(argc > 1)
     TestSynth(argv[1]);
