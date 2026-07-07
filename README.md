@@ -58,6 +58,21 @@ mkdir -p out
 ./build/tools/primeplay/primeplay assets/v2m/pzero_new.v2m -o patient_zero.wav
 ```
 
+## Prime Studio — AI-powered workbench
+
+Describe a material in plain English. AI turns it into an operator recipe; the
+C++ engine synthesizes the texture from math. No shipped pixels.
+
+```bash
+./studio/launch.sh
+# → http://127.0.0.1:8787
+```
+
+Set `OPENAI_API_KEY` for GPT-powered material design; a rules engine runs as
+fallback without any API key. See [docs/AI.md](docs/AI.md).
+
+![Prime Studio](docs/images/prime-studio.png)
+
 ## Repository layout
 
 ```
@@ -66,7 +81,9 @@ engine/
   synth/         V2 synthesizer core + .v2m module player (from v2)
 tools/
   primetex/      texture generator CLI
+  primeforge/    recipe-driven single-texture generator (AI backend)
   primeplay/     .v2m -> WAV renderer CLI
+studio/          Prime Studio web UI + AI layer (FastAPI)
 tests/           smoke tests (run via ctest)
 assets/v2m/      sample V2 modules (CC-BY)
 docs/            architecture notes and resurrection roadmap

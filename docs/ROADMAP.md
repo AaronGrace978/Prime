@@ -3,14 +3,21 @@
 The plan, phase by phase. Each phase produces something that builds, runs and
 is tested — no big-bang rewrites.
 
-## Phase 1 — Portable core (this PR)
+## Phase 1 — Portable core (shipped)
 
 - [x] Vendor OpenKTG texture generator, build as `prime_texture`
 - [x] Vendor V2 synthesizer + .v2m player, port off 32-bit MSVC
-      (inline asm removed, LP64-correct types), build as `prime_synth`
-- [x] `primetex`: texture showcase CLI
-- [x] `primeplay`: .v2m -> WAV renderer
-- [x] Smoke tests + CI (Linux GCC/Clang)
+- [x] `primetex` / `primeplay` CLI tools
+- [x] Smoke tests + CI
+
+## Phase 1.5 — AI layer (shipped)
+
+- [x] Parameterized texture recipes (`engine/texture/recipe.*`)
+- [x] `primeforge` — recipe-driven single-texture generator
+- [x] **Prime Studio** — web UI + FastAPI
+  - Natural language → operator recipe → C++ engine → live preview
+  - GPT when `OPENAI_API_KEY` is set; rules engine fallback always available
+  - Operator graph visualization + machine-readable recipe export
 
 ## Phase 2 — The Werkkzeug3 texture pipeline
 

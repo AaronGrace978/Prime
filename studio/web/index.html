@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prime Studio — AI × Werkkzeug</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="glow-orb glow-orb--1" aria-hidden="true"></div>
+  <div class="glow-orb glow-orb--2" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="logo">
+      <span class="logo__mark">◈</span>
+      <div>
+        <h1>Prime Studio</h1>
+        <p class="tagline">AI-powered procedural worlds · Werkkzeug resurrection</p>
+      </div>
+    </div>
+    <div class="status" id="status">
+      <span class="status__dot" id="statusDot"></span>
+      <span id="statusText">connecting…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel--prompt">
+      <h2>Describe your material</h2>
+      <p class="hint">Natural language → operator graph → pixels from math. Zero shipped assets.</p>
+
+      <div class="presets" id="presets"></div>
+
+      <textarea id="prompt" rows="4" placeholder="e.g. dark kkrieger sci-fi floor grating with brushed metal and diagonal grid bumps…"></textarea>
+
+      <div class="controls">
+        <label class="size-label">
+          Size
+          <select id="size">
+            <option value="256">256</option>
+            <option value="512" selected>512</option>
+            <option value="1024">1024</option>
+          </select>
+        </label>
+        <button id="generate" class="btn btn--primary">
+          <span class="btn__icon">⚡</span> Generate
+        </button>
+      </div>
+
+      <div class="ai-meta" id="aiMeta" hidden>
+        <span class="badge" id="aiMode">rules</span>
+        <p id="aiExplanation"></p>
+      </div>
+    </section>
+
+    <section class="panel panel--preview">
+      <h2>Live preview</h2>
+      <div class="preview-wrap" id="previewWrap">
+        <div class="preview-placeholder" id="placeholder">
+          <div class="placeholder-grid"></div>
+          <p>Your procedural texture appears here</p>
+          <span class="placeholder-sub">powered by OpenKTG engine</span>
+        </div>
+        <img id="preview" alt="Generated texture" hidden />
+        <div class="preview-stats" id="previewStats" hidden></div>
+      </div>
+    </section>
+
+    <section class="panel panel--graph">
+      <h2>Operator graph</h2>
+      <p class="hint">The generation history — not pixels — that defines your texture.</p>
+      <div class="graph" id="graph">
+        <div class="graph-empty">Generate to see the operator chain</div>
+      </div>
+    </section>
+
+    <section class="panel panel--recipe">
+      <h2>Recipe</h2>
+      <p class="hint">Machine-readable parameters the C++ engine executes.</p>
+      <pre id="recipe" class="recipe-code"># waiting for generation…</pre>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span>Farbrausch Werkkzeug3 · OpenKTG · V2 synth</span>
+    <span id="timing"></span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

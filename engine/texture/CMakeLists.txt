@@ -3,7 +3,9 @@
 
 add_library(prime_texture STATIC
   gentexture.cpp
+  recipe.cpp
   gentexture.hpp
+  recipe.hpp
   types.hpp)
 
 target_include_directories(prime_texture PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
